@@ -1,5 +1,6 @@
 #include "ClimbingSystem/Public/Components/CustomMovementComponent.h"
 
+#include "ClimbingSystem/DebugHelper.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -13,15 +14,24 @@ void UCustomMovementComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	TraceClimbableSurfaces();
-	TraceFromEyeHeight(100.f);
 }
 #pragma region ClimbTraces
 TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End,
-	bool bShowDebugShape)
+	bool bShowDebugShape, bool bDrawPersistentShapes)
 {
 	TArray<FHitResult> OutCapsuleTraceHitResults;
+
+	EDrawDebugTrace::Type DebugTraceType = EDrawDebugTrace::None;
+
+	if(bShowDebugShape)
+	{
+		DebugTraceType = EDrawDebugTrace::ForOneFrame;
+
+		if(bDrawPersistentShapes)
+		{
+			DebugTraceType = EDrawDebugTrace::Persistent;
+		}
+	}
 	
 	UKismetSystemLibrary::CapsuleTraceMultiForObjects(
 		this,
@@ -32,7 +42,7 @@ TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const F
 		ClimbableSurfaceTraceTypes,
 		false,
 		TArray<AActor*>(),
-		bShowDebugShape ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None,
+		DebugTraceType,
 		OutCapsuleTraceHitResults,
 		false
 		);
@@ -41,9 +51,21 @@ TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const F
 }
 
 FHitResult UCustomMovementComponent::DoLineTraceSingleByObject(const FVector& Start, const FVector& End,
-	bool bShowDebugShape)
+	bool bShowDebugShape, bool bDrawPersistentShapes)
 {
 	FHitResult OutHit;
+
+	EDrawDebugTrace::Type DebugTraceType = EDrawDebugTrace::None;
+	if(bShowDebugShape)
+	{
+		DebugTraceType = EDrawDebugTrace::ForOneFrame;
+
+		if(bDrawPersistentShapes)
+		{
+			DebugTraceType = EDrawDebugTrace::Persistent;
+		}
+	}
+	
 	UKismetSystemLibrary::LineTraceSingleForObjects(
 		this,
 		Start,
@@ -51,7 +73,7 @@ FHitResult UCustomMovementComponent::DoLineTraceSingleByObject(const FVector& St
 		ClimbableSurfaceTraceTypes,
 		false,
 		TArray<AActor*>(),
-		bShowDebugShape ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None,
+		DebugTraceType,
 		OutHit,
 		false
 		);
@@ -62,16 +84,18 @@ FHitResult UCustomMovementComponent::DoLineTraceSingleByObject(const FVector& St
 
 #pragma region ClimbCore
 
-void UCustomMovementComponent::TraceClimbableSurfaces()
+bool UCustomMovementComponent::TraceClimbableSurfaces()
 {
 	const FVector StartOffset = UpdatedComponent->GetForwardVector() * 30.f;
 	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
 	const FVector End = Start + UpdatedComponent->GetForwardVector();
 	
-	DoCapsuleTraceMultiByObject(Start,End,true);
+	ClimbableSurfacesTracedResults = DoCapsuleTraceMultiByObject(Start,End,true,true);
+
+	return !ClimbableSurfacesTracedResults.IsEmpty();
 }
 
-void UCustomMovementComponent::TraceFromEyeHeight(float TraceDistance, float TraceStartOffset)
+FHitResult UCustomMovementComponent::TraceFromEyeHeight(float TraceDistance, float TraceStartOffset)
 {
 	const FVector ComponentLocation = UpdatedComponent->GetComponentLocation();
 	const FVector EyeHeightOffset = UpdatedComponent->GetUpVector() * (CharacterOwner->BaseEyeHeight + TraceStartOffset);
@@ -79,7 +103,42 @@ void UCustomMovementComponent::TraceFromEyeHeight(float TraceDistance, float Tra
 	const FVector Start = ComponentLocation + EyeHeightOffset;
 	const FVector End = Start + UpdatedComponent->GetForwardVector() * TraceDistance;
 
-	DoLineTraceSingleByObject(Start,End,true);
+	return DoLineTraceSingleByObject(Start,End,true,true);
+}
+
+bool UCustomMovementComponent::CanStartClimbing()
+{
+	if(IsFalling()) return false;
+	if(!TraceClimbableSurfaces()) return false;
+	if(!TraceFromEyeHeight(100.f).bBlockingHit) return false;
+
+	return true;
 }
 
 #pragma endregion
+void UCustomMovementComponent::ToggleClimbing(bool bEnableClimb)
+{
+	if(bEnableClimb)
+	{
+		if(CanStartClimbing())
+		{
+			//Enter the climb state
+			Debug::Print(TEXT("Can start climbing"));
+		}
+		else
+		{
+			Debug::Print(TEXT("Can NOT start climbing"));
+		}
+	}
+	else
+	{
+		//Stop climbing
+	}
+}
+
+bool UCustomMovementComponent::IsClimbing() const
+{
+	return MovementMode == MOVE_Custom && CustomMovementMode == ECustomMovementMode::MOVE_Climb;
+}
+
+
