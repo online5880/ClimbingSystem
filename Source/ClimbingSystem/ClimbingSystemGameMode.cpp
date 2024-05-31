@@ -1,6 +1,6 @@
 #include "ClimbingSystemGameMode.h"
-#include "ClimbingSystemCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include UE_INLINE_GENERATED_CPP_BY_NAME(ClimbingSystemGameMode)
 
 AClimbingSystemGameMode::AClimbingSystemGameMode()
 {

@@ -9,13 +9,17 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "DebugHelper.h"
+#include "Public/Components/CustomMovementComponent.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(ClimbingSystemCharacter)
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AClimbingSystemCharacter
 
-AClimbingSystemCharacter::AClimbingSystemCharacter()
+AClimbingSystemCharacter::AClimbingSystemCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -25,6 +29,8 @@ AClimbingSystemCharacter::AClimbingSystemCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	CustomMovementComponent = Cast<UCustomMovementComponent>(GetCharacterMovement());
+	
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
@@ -93,6 +99,7 @@ void AClimbingSystemCharacter::SetupPlayerInputComponent(UInputComponent* Player
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
+
 
 void AClimbingSystemCharacter::Move(const FInputActionValue& Value)
 {
