@@ -1,6 +1,7 @@
 #include "ClimbingSystem/Public/Components/CustomMovementComponent.h"
 
 #include "ClimbingSystem/DebugHelper.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -14,6 +15,25 @@ void UCustomMovementComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UCustomMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+{
+	if(IsClimbing())
+	{
+		bOrientRotationToMovement = false;
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(48.f);
+	}
+
+	if(PreviousMovementMode == MOVE_Custom && PreviousCustomMode == ECustomMovementMode::MOVE_Climb)
+	{
+		bOrientRotationToMovement = true;
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(96.f);
+
+		StopMovementImmediately();
+	}
+
+	Super::OnMovementModeChanged(PreviousMovementMode,PreviousCustomMode);
 }
 #pragma region ClimbTraces
 TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End,
@@ -115,6 +135,16 @@ bool UCustomMovementComponent::CanStartClimbing()
 	return true;
 }
 
+void UCustomMovementComponent::StartClimbing()
+{
+	SetMovementMode(MOVE_Custom,ECustomMovementMode::MOVE_Climb);
+}
+
+void UCustomMovementComponent::StopClimbing()
+{
+	SetMovementMode(MOVE_Falling);
+}
+
 #pragma endregion
 void UCustomMovementComponent::ToggleClimbing(bool bEnableClimb)
 {
@@ -124,6 +154,7 @@ void UCustomMovementComponent::ToggleClimbing(bool bEnableClimb)
 		{
 			//Enter the climb state
 			Debug::Print(TEXT("Can start climbing"));
+			StartClimbing();
 		}
 		else
 		{
@@ -133,6 +164,7 @@ void UCustomMovementComponent::ToggleClimbing(bool bEnableClimb)
 	else
 	{
 		//Stop climbing
+		StopClimbing();
 	}
 }
 
