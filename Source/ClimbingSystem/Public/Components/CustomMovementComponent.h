@@ -24,9 +24,14 @@ public:
 	UCustomMovementComponent();
 
 protected:
+
+#pragma region OverrideFunctions
+	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	
+#pragma endregion
 
 private:
 #pragma region ClimbTraces
@@ -48,11 +53,19 @@ private:
 
 	void StopClimbing();
 
+	void PhysClimb(float deltaTime, int32 Iterations);
+
+	void ProcessClimbableSurfaceInfo();
+
 #pragma endregion
 
 #pragma region ClimbCoreVariables
 
 	TArray<FHitResult> ClimbableSurfacesTracedResults;
+
+	FVector CurrentClimbableSurfaceLocation;
+
+	FVector CurrentClimbableSurfaceNormal;
 
 #pragma endregion
 
@@ -65,6 +78,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement : Climbing", meta = (AllowPrivateAccess = "true"))
 	float ClimbCapsuleTraceHalfHeight = 72.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement : Climbing", meta = (AllowPrivateAccess = "true"))
+	float MaxBreakClimbDeceleration = 400.f;
+	
 #pragma endregion
 	
 public:
