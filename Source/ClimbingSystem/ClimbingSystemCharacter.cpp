@@ -103,8 +103,22 @@ void AClimbingSystemCharacter::SetupPlayerInputComponent(UInputComponent* Player
 
 void AClimbingSystemCharacter::Move(const FInputActionValue& Value)
 {
+	if(!CustomMovementComponent) return;
+
+	if(CustomMovementComponent->IsClimbing())
+	{
+		HandleClimbMovementInput(Value);
+	}
+	else
+	{
+		HandleGroundMovementInput(Value);
+	}
+}
+
+void AClimbingSystemCharacter::HandleGroundMovementInput(const FInputActionValue& Value)
+{
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -122,6 +136,31 @@ void AClimbingSystemCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+}
+
+void AClimbingSystemCharacter::HandleClimbMovementInput(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	const FVector ForwardDirection = FVector::CrossProduct(
+		-CustomMovementComponent->GetClimbableSurfaceNormal(),
+		GetActorRightVector()
+	);
+
+	const FVector RightDirection = FVector::CrossProduct(
+		-CustomMovementComponent->GetClimbableSurfaceNormal(),
+		-GetActorUpVector()
+	);
+
+	DrawDebugDirectionalArrow(GetWorld(),GetActorLocation(), GetActorLocation() + CustomMovementComponent->GetClimbableSurfaceNormal() * 100, 100, FColor::Blue, false, 0.1f, 0, 1);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForwardDirection * 100, 100, FColor::Red, false, 0.1f, 0, 1);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + RightDirection * 100, 100, FColor::Green, false, 0.1f, 0, 1);
+	 
+
+	// add movement 
+	AddMovementInput(ForwardDirection, MovementVector.Y);
+	AddMovementInput(RightDirection, MovementVector.X);
 }
 
 void AClimbingSystemCharacter::Look(const FInputActionValue& Value)
