@@ -59,6 +59,8 @@ private:
 
 	void ProcessClimbableSurfaceInfo();
 
+	bool CheckShouldStopClimbing() const;
+
 	FQuat GetClimbRotation(float DeltaTime) const;
 
 	void SnapMovementToClimbableSurface(float DeltaTime) const;
