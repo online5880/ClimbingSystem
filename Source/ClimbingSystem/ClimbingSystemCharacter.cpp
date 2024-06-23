@@ -153,9 +153,9 @@ void AClimbingSystemCharacter::HandleClimbMovementInput(const FInputActionValue&
 		-GetActorUpVector()
 	);
 
-	DrawDebugDirectionalArrow(GetWorld(),GetActorLocation(), GetActorLocation() + CustomMovementComponent->GetClimbableSurfaceNormal() * 100, 100, FColor::Blue, false, 0.1f, 0, 1);
-	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForwardDirection * 100, 100, FColor::Red, false, 0.1f, 0, 1);
-	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + RightDirection * 100, 100, FColor::Green, false, 0.1f, 0, 1);
+	DrawDebugDirectionalArrow(GetWorld(),GetActorLocation(), GetActorLocation() + CustomMovementComponent->GetClimbableSurfaceNormal() * 100, 100, FColor::Blue, false, 0.0f, 0, 1);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForwardDirection * 100, 100, FColor::Red, false, 0.0f, 0, 1);
+	DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + RightDirection * 100, 100, FColor::Green, false, 0.0f, 0, 1);
 	 
 
 	// add movement 

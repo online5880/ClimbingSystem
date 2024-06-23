@@ -3,6 +3,7 @@
 #include "ClimbingSystem/DebugHelper.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(CustomMovementComponent)
@@ -347,6 +348,11 @@ void UCustomMovementComponent::ToggleClimbing(bool bEnableClimb)
 bool UCustomMovementComponent::IsClimbing() const
 {
 	return MovementMode == MOVE_Custom && CustomMovementMode == ECustomMovementMode::MOVE_Climb;
+}
+
+FVector UCustomMovementComponent::GetUnRotatedClimbVelocity() const
+{
+	return UKismetMathLibrary::Quat_UnrotateVector(UpdatedComponent->GetComponentQuat(),Velocity);
 }
 
 
