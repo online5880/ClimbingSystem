@@ -64,6 +64,8 @@ private:
 
 	bool CheckShouldStopClimbing() const;
 
+	bool CheckHasReachedFloor();
+
 	FQuat GetClimbRotation(float DeltaTime) const;
 
 	void SnapMovementToClimbableSurface(float DeltaTime) const;
