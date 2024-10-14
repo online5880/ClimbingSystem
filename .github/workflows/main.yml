@@ -1,6 +1,9 @@
-name: Slack Notification
-uses: tokorom/action-slack-incoming-webhook@main
-env:
-  INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-with:
-  text: Hello, Slack!
+name: Notify Slack on Push
+on: push
+jobs:
+  slack_notification:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send Slack notification
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"New push event on $(git rev-parse --abbrev-ref HEAD) branch"}' ${{ secrets.SLACK_WEBHOOK_URL }}
