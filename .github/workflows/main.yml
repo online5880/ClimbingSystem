@@ -11,4 +11,6 @@ jobs:
       run: |
         COMMIT_MESSAGE=$(git log -1 --pretty=%B)
         AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
-        curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"푸시 - [$AUTHOR_NAME] : $COMMIT_MESSAGE\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+        curl -X POST -H 'Content-type: application/json' --data "{
+          \"text\":\":rocket: *New Push by [$AUTHOR_NAME]*\n\n\`\`\`$COMMIT_MESSAGE\`\`\`\"
+        }" ${{ secrets.SLACK_WEBHOOK_URL }}
