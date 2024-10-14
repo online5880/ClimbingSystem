@@ -4,6 +4,9 @@ jobs:
   slack_notification:
     runs-on: ubuntu-latest
     steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
     - name: Send Slack notification
       run: |
         COMMIT_MESSAGE=$(git log -1 --pretty=%B)
